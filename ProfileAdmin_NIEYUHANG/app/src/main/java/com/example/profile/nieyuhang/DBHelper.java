@@ -1,0 +1,11 @@
+package com.example.profile.nieyuhang;
+import android.content.ContentValues;import android.content.Context;import android.database.Cursor;import android.database.sqlite.SQLiteDatabase;import android.database.sqlite.SQLiteOpenHelper;import java.util.ArrayList;import java.util.List;
+public class DBHelper extends SQLiteOpenHelper {
+    public DBHelper(Context c){super(c,"users.db",null,1);}
+    @Override public void onCreate(SQLiteDatabase db){db.execSQL("CREATE TABLE users(id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, email TEXT, phone TEXT)"); ContentValues cv=new ContentValues(); cv.put("username","admin"); cv.put("password","2406033346"); cv.put("email","admin@example.com"); cv.put("phone","000"); db.insert("users",null,cv);}
+    @Override public void onUpgrade(SQLiteDatabase d,int o,int n){d.execSQL("DROP TABLE IF EXISTS users"); onCreate(d);}
+    public boolean addUser(String u,String p,String e,String ph){SQLiteDatabase db=getWritableDatabase(); ContentValues cv=new ContentValues();cv.put("username",u);cv.put("password",p);cv.put("email",e);cv.put("phone",ph); try{db.insertOrThrow("users",null,cv);return true;}catch(Exception ex){return false;}}
+    public boolean checkUser(String u,String p){SQLiteDatabase db=getReadableDatabase(); Cursor c=db.rawQuery("SELECT id FROM users WHERE username=? AND password=?",new String[]{u,p}); boolean ok=c.getCount()>0; c.close(); return ok;}
+    public String[] getUserContact(String u){SQLiteDatabase db=getReadableDatabase(); Cursor c=db.rawQuery("SELECT email,phone FROM users WHERE username=?",new String[]{u}); String em="",ph=""; if(c.moveToFirst()){em=c.getString(0)==null?"":c.getString(0); ph=c.getString(1)==null?"":c.getString(1);} c.close(); return new String[]{em,ph};}
+    public List<String> getAllUsernames(){SQLiteDatabase db=getReadableDatabase(); Cursor c=db.rawQuery("SELECT username FROM users",null); List<String> l=new ArrayList<>(); if(c.moveToFirst()){ do{ l.add(c.getString(0)); } while(c.moveToNext()); } c.close(); return l;}
+}
