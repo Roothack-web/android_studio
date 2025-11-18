@@ -1,33 +1,38 @@
-name: Android CI
+name: Build 3 Android APKs
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        project: [NIEYUHANG, YUANZIQING, CHENXIAOTIN]
+
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: "17"
-        distribution: "temurin"
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Give gradlew executable permission
+        run: chmod +x ${{ matrix.project }}/gradlew
 
-    - name: Build Debug APK
-      run: ./gradlew assembleDebug
+      - name: Build Debug APK
+        working-directory: ${{ matrix.project }}
+        run: ./gradlew assembleDebug
 
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-debug-apk
-        path: app/build/outpu
+      - name: Upload APK (artifact v4)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.project }}-debug-apk
+          path: ${{ matrix.project }}/app/build/outputs/apk/debug/*.apk
